@@ -6,6 +6,7 @@
       aliases: ["Purchase Agreement", "PSA"],
       templateFile: "PSA.docx",
       templateName: "PSA",
+      filenameLabel: "PSA",
       formSections: [
         {
           title: "PSA",
@@ -41,6 +42,7 @@
       aliases: ["PSA (with marketing)"],
       templateFile: "PSA(with marketing).docx",
       templateName: "PSA (with marketing)",
+      filenameLabel: "PSA",
       formSections: [
         {
           title: "PSA (with marketing)",
@@ -76,6 +78,7 @@
       aliases: ["AIF"],
       templateFile: "AIF.docx",
       templateName: "AIF",
+      filenameLabel: "AIF",
       formSections: [
         {
           title: "AIF",
@@ -100,6 +103,7 @@
       aliases: ["Assignment Agreement", "Novation"],
       templateFile: "Novation.docx",
       templateName: "Novation",
+      filenameLabel: "Novation",
       formSections: [
         {
           title: "Novation",
@@ -127,6 +131,7 @@
       aliases: ["Price Addendum", "Addendum"],
       templateFile: "Addendum.docx",
       templateName: "Addendum",
+      filenameLabel: "Addendum",
       formSections: [
         {
           title: "Addendum",
@@ -154,6 +159,7 @@
       aliases: ["Cancellation Agreement", "Cancellation"],
       templateFile: "Cancellation.docx",
       templateName: "Cancellation Agreement",
+      filenameLabel: "Cancellation",
       formSections: [
         {
           title: "Cancellation Agreement",
@@ -191,6 +197,10 @@
 
   function getLabel(id) {
     return get(id)?.label || get("psa").label;
+  }
+
+  function getFilenameLabel(id) {
+    return get(id)?.filenameLabel || getLabel(id);
   }
 
   function resolveId(value) {
@@ -237,6 +247,7 @@
     list,
     get,
     getLabel,
+    getFilenameLabel,
     resolveId,
     supportsBody,
     supportsBullets,

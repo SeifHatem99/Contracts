@@ -18,6 +18,7 @@
     const buyerContacts = (state.contacts || []).filter((c) => c.category === "Buyer Contacts");
     const titleContacts = (state.contacts || []).filter((c) => c.category === "Title Companies");
     const propertyRecords = state.properties || [];
+    const companies = window.CompanyDefinitions?.list() || [];
     const contractDef = window.ContractDefinitions?.get(formDeal.contractType) || window.ContractDefinitions?.get("psa");
     const sections = contractDef.formSections || [];
     view.innerHTML = `
@@ -38,14 +39,24 @@
         <div class="card section-card">
           <h3>Quick Create</h3>
           <div class="fields">
+            <div class="field"><label>Company</label><select id="companySelect" name="companyId"><option value="">Select company</option>${companies.map((company) => `<option value="${company.id}" ${formDeal.companyId === company.id ? "selected" : ""}>${Utils.escapeHtml(company.name)}</option>`).join("")}</select></div>
             <div class="field"><label>Select Seller</label><select id="sellerContactSelect"><option value="">Select seller contact</option>${sellerContacts.map((c) => `<option value="${c.id}">${Utils.escapeHtml(c.fullName)}</option>`).join("")}</select></div>
             <div class="field"><label>Select Buyer</label><select id="buyerContactSelect"><option value="">Select buyer contact</option>${buyerContacts.map((c) => `<option value="${c.id}">${Utils.escapeHtml(c.fullName)}</option>`).join("")}</select></div>
             <div class="field"><label>Select Property</label><select id="propertyRecordSelect"><option value="">Select property</option>${propertyRecords.map((p) => `<option value="${p.id}">${Utils.escapeHtml(p.propertyAddress)}</option>`).join("")}</select></div>
           </div>
         </div>
+        <div class="card section-card">
+          <h3>Signature Blocks</h3>
+          <div class="fields">
+            <div class="field"><label>Seller Signature Name 1</label><input id="sellerSignature1" name="sellerSignature1" value="${Utils.escapeHtml(formDeal.sellerSignature1 || formDeal.sellerName || "")}" /></div>
+            <div class="field"><label>Seller Signature Name 2</label><input id="sellerSignature2" name="sellerSignature2" value="${Utils.escapeHtml(formDeal.sellerSignature2 || "")}" placeholder="Optional" /></div>
+          </div>
+        </div>
         ${sections.map((group) => section(group.title, group.fields.map(([name, label, type, autoCurrency = false, readonly = false]) => field(label, name, formDeal[name], "", errors, type, autoCurrency, readonly, formDeal.contractType)).join(""))).join("")}
       </form>
     `;
+    const companySelect = Utils.query("#companySelect");
+    if (companySelect) companySelect.value = formDeal.companyId || "";
     const sellerSelect = Utils.query("#sellerContactSelect");
     if (sellerSelect) sellerSelect.value = formDeal.sellerName ? (sellerContacts.find((c) => c.fullName === formDeal.sellerName)?.id || "") : "";
     const form = Utils.query("#dealForm");
@@ -245,6 +256,7 @@
         <label class="output-selector">Output
           <select id="generationOutputType">
             <option value="word">Word only</option>
+            <option value="pdf">PDF only</option>
             <option value="word_pdf">Word + PDF</option>
           </select>
         </label>

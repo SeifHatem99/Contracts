@@ -12,6 +12,8 @@ This pass normalized the remaining legacy contract-type references so the applic
 - Storage seeding now builds master templates from the canonical registry.
 - Supported contract-type validation now derives from the canonical registry.
 - Contract label assignment in app workflow code now uses a registry helper.
+- Generated filename labels now use canonical `filenameLabel` metadata, with `psa_marketing` simplified to `PSA` for exports.
+- Generated filenames now use the street portion before the first comma in the stored property address.
 
 ### References intentionally kept local
 
@@ -35,3 +37,12 @@ This pass normalized the remaining legacy contract-type references so the applic
 ## Notes
 
 The goal of this cleanup was reduction of duplication, not a behavior change. Contract-specific workflow logic should continue to live in the modules that own generation, validation, and UI behavior.
+
+## Company and Signature Extension
+
+The new Generation V2 company layer follows the same rule: canonical metadata belongs in `js/contracts/`, while placeholder resolution and DOCX cleanup remain in the document pipeline.
+
+- Company names and owners now resolve from a single registry.
+- The form stores a stable company ID instead of a hard-coded company name.
+- `COMPANY_NAME` and `COMPANY_OWNER` are resolved through the canonical data layer.
+- Optional Seller 2 structural removal is currently deferred. The placeholder plumbing remains, but broad XML deletion is intentionally disabled until the actual Word table/paragraph structure around `SELLER_SIGNATURE_2` is inspected in the real template.

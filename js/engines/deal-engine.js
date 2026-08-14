@@ -24,8 +24,13 @@
       id: Utils.uid("deal"),
       contractType: resolved.id,
       contractTypeLabel: resolved.label,
+      companyId: "",
+      companyName: "",
+      companyOwner: "",
       status: "Draft",
       sellerName: "",
+      sellerSignature1: "",
+      sellerSignature2: "",
       purchasePrice: "",
       earnestMoneyDeposit: "",
       cashAtCloseOfEscrow: "",
@@ -53,6 +58,13 @@
     deal.sellerRetainedBalance = FormattingEngine.number(deal.sellerRetainedBalance);
     deal.purchasePriceWords = FormattingEngine.words(deal.purchasePrice);
     deal.titleCompany = deal.titleCompany || settings.defaultTitleCompany || "";
+    const company = window.CompanyDefinitions?.get(deal.companyId);
+    if (company) {
+      deal.companyName = company.name;
+      deal.companyOwner = company.ownerName;
+    }
+    deal.sellerSignature1 = String(deal.sellerSignature1 || deal.sellerName || "").trim();
+    deal.sellerSignature2 = String(deal.sellerSignature2 || "").trim();
     deal.contractTypeLabel = contract(deal.contractType)?.label || deal.contractTypeLabel || deal.contractType;
     deal.status = deal.status || "Draft";
     deal.notes = Array.isArray(deal.notes) ? deal.notes : [];
@@ -64,7 +76,8 @@
 
   function sections() {
     return {
-      seller: ["sellerName"],
+      seller: ["sellerName", "sellerSignature1", "sellerSignature2"],
+      company: ["companyId"],
       financial: ["purchasePrice", "earnestMoneyDeposit", "cashAtCloseOfEscrow", "closeOfEscrowDays", "inspectionPeriodDays", "sellerRetainedBalance"],
       property: ["property", "name", "propertyAddress", "date", "body"],
     };
@@ -97,6 +110,7 @@
     const currency = settings.currency || "USD";
     const money = (value) => (value ? FormattingEngine.currency(value, currency) : "");
     const selected = contract(contractType);
+    const company = window.CompanyDefinitions?.get(normalized.companyId);
     const tokenMap = {};
     const placeholders = selected?.placeholderMap || contract("psa").placeholderMap;
     Object.entries(placeholders).forEach(([token, fieldRef]) => {
@@ -114,6 +128,18 @@
       }
       if (fieldRef === "body") {
         tokenMap[token] = normalized.body || "";
+        return;
+      }
+      if (fieldRef === "companyId") {
+        tokenMap[token] = normalized.companyId || "";
+        return;
+      }
+      if (fieldRef === "companyName") {
+        tokenMap[token] = normalized.companyName || company?.name || "";
+        return;
+      }
+      if (fieldRef === "companyOwner") {
+        tokenMap[token] = normalized.companyOwner || company?.ownerName || "";
         return;
       }
       if (["purchasePrice", "earnestMoneyDeposit", "cashAtCloseOfEscrow", "sellerRetainedBalance"].includes(fieldRef)) {

@@ -231,7 +231,8 @@
     }
     const templateName = TemplateLoader.filename(template.type);
     const existingFilenames = [...(state.generated || []), ...(state.documents || [])].map((item) => item.filename || item.name);
-    const filename = DocumentGenerator.buildFilename(deal, template.name, state.settings, existingFilenames);
+    const filenameLabel = ContractDefinitions.getFilenameLabel(template.type);
+    const filename = DocumentGenerator.buildFilename(deal, filenameLabel, state.settings, existingFilenames);
     ValidationEngine.debugRequiredFields(deal);
     const validationErrors = ValidationEngine.validate(deal, deal.contractType);
     const checklist = ContractValidator.checklist(deal, template, state.settings);
@@ -259,7 +260,7 @@
         const outputType = Utils.query("#generationOutputType")?.value || "word";
         const generated = await DocumentGenerator.generateDocx(deal, template, { ...state.settings, existingFilenames });
         let pdfResult = null;
-        if (outputType === "word_pdf") {
+        if (outputType === "pdf" || outputType === "word_pdf") {
           pdfResult = await PdfConverter.convert(generated.blob, generated.filename);
         }
         const record = {
@@ -277,7 +278,9 @@
         DocumentManager.add(deal, record);
         WorkflowManager.setStatus(deal, "Ready for Signature", "Contract generated");
         ActivityLogger.log(deal, "Template Used", `${template.name} v${template.version}`);
-        FileManager.downloadBlob(generated.blob, generated.filename);
+        if (outputType !== "pdf") {
+          FileManager.downloadBlob(generated.blob, generated.filename);
+        }
         if (pdfResult?.ok) {
           FileManager.downloadBlob(pdfResult.blob, pdfResult.filename);
         } else if (pdfResult) {
@@ -285,7 +288,10 @@
         }
         await markActiveDraft("completed");
         showGenerationResult({ docx: generated, pdf: pdfResult });
-        UI.notify(pdfResult?.ok ? "Word and PDF generated." : "Word document generated successfully.", "success");
+        const successMessage = outputType === "pdf"
+          ? (pdfResult?.ok ? "PDF generated." : "PDF conversion was unavailable.")
+          : (pdfResult?.ok ? "Word and PDF generated." : "Word document generated successfully.");
+        UI.notify(successMessage, pdfResult?.ok || outputType === "word" ? "success" : "warning");
       } catch (error) {
         UI.notify(error.message || "Document generation failed.", "error");
         btn.disabled = false;
