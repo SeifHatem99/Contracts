@@ -189,10 +189,22 @@
     return byId.get(key) || byId.get("psa");
   }
 
+  function getLabel(id) {
+    return get(id)?.label || get("psa").label;
+  }
+
   function resolveId(value) {
     if (!value) return "psa";
     const lower = String(value).toLowerCase();
     return byAlias.get(lower) || lower;
+  }
+
+  function supportsBody(id) {
+    return !!get(id)?.generationOptions?.bodyBullets;
+  }
+
+  function supportsBullets(id) {
+    return supportsBody(id);
   }
 
   function list() {
@@ -224,7 +236,10 @@
   window.ContractDefinitions = {
     list,
     get,
+    getLabel,
     resolveId,
+    supportsBody,
+    supportsBullets,
     labels,
     templateFiles,
     findByTemplateFile,

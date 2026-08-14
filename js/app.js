@@ -333,7 +333,7 @@
         const draft = form ? ContractFormView.dealFromForm(form, activeDeal() || ContractFormView.blankDeal(state.ui.draftContractType)) : ContractFormView.blankDeal();
         ValidationEngine.debugRequiredFields(draft);
         draft.contractType = e.target.value;
-        draft.contractTypeLabel = ContractDefinitions.get(e.target.value)?.label || e.target.value;
+        draft.contractTypeLabel = ContractDefinitions.getLabel(e.target.value);
         draft.titleCompany = draft.titleCompany || state.settings.defaultTitleCompany;
         state.ui.draftContractType = e.target.value;
         state.ui.activeDealId = draft.id;

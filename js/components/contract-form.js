@@ -70,7 +70,7 @@
     const control = type === "textarea"
       ? `<textarea ${common} ${readonlyAttr} rows="4">${Utils.escapeHtml(displayValue)}</textarea>`
       : `<input ${common} ${readonlyAttr} type="${type}" value="${Utils.escapeHtml(displayValue)}" />`;
-    const bullets = name === "body" ? bodyBulletOptions(contractType, value) : "";
+    const bullets = name === "body" && window.ContractDefinitions?.supportsBullets(contractType) ? bodyBulletOptions(contractType, value) : "";
     return `<div class="${cls}"><label>${label}</label>${control}${bullets}${errors[name] ? `<div class="error-message">${errors[name]}</div>` : ""}</div>`;
   }
 
