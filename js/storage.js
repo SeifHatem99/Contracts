@@ -91,42 +91,40 @@
   }
 
   function seed(state) {
-    const templateAlias = {
-      [`${"purchase"}_${"agreement"}`]: { type: "psa", name: "PSA", fileName: "PSA.docx", content: window.TemplateLibrary.psa() },
-      [`${"cancellation"}_${"agreement"}`]: { type: "cancellation", name: "Cancellation Agreement", fileName: "Cancellation.docx", content: window.TemplateLibrary.cancellation() },
-      [`${"price"}_${"addendum"}`]: { type: "addendum", name: "Addendum", fileName: "Addendum.docx", content: window.TemplateLibrary.addendum() },
-      [`${"assignment"}_${"agreement"}`]: { type: "novation", name: "Novation", fileName: "Novation.docx", content: window.TemplateLibrary.novation() },
-      addendum: { type: "addendum", name: "Addendum", fileName: "Addendum.docx", content: window.TemplateLibrary.addendum() },
-      cancellation: { type: "cancellation", name: "Cancellation Agreement", fileName: "Cancellation.docx", content: window.TemplateLibrary.cancellation() },
-    };
+    const definitionMap = Object.fromEntries((window.ContractDefinitions?.list() || []).map((contract) => [contract.id, contract]));
     state.deals = (state.deals || []).map((deal) => {
-      const mappedType = templateAlias[deal.contractType]?.type || deal.contractType || "psa";
-      const mappedLabel = templateAlias[deal.contractType]?.name || deal.contractTypeLabel || mappedType;
+      const mappedType = window.ContractDefinitions?.resolveId(deal.contractType) || deal.contractType || "psa";
+      const mappedLabel = definitionMap[mappedType]?.label || deal.contractTypeLabel || mappedType;
       return { ...deal, contractType: mappedType, contractTypeLabel: mappedLabel };
     });
     if (!state.templates || !state.templates.length) {
       const now = new Date().toISOString();
-      state.templates = [
-        { id: "tpl_psa", type: "psa", name: "PSA", version: 1, master: true, content: window.TemplateLibrary.psa(), createdAt: now, modifiedAt: now, archived: false, status: "Active", versions: [], backups: [] },
-        { id: "tpl_psa_marketing", type: "psa_marketing", name: "PSA (with marketing)", version: 1, master: true, content: window.TemplateLibrary.psaMarketing(), createdAt: now, modifiedAt: now, archived: false, status: "Active", versions: [], backups: [] },
-        { id: "tpl_aif", type: "aif", name: "AIF", version: 1, master: true, content: window.TemplateLibrary.aif(), createdAt: now, modifiedAt: now, archived: false, status: "Active", versions: [], backups: [] },
-        { id: "tpl_novation", type: "novation", name: "Novation", version: 1, master: true, content: window.TemplateLibrary.novation(), createdAt: now, modifiedAt: now, archived: false, status: "Active", versions: [], backups: [] },
-        { id: "tpl_addendum", type: "addendum", name: "Addendum", version: 1, master: true, fileName: "Addendum.docx", content: window.TemplateLibrary.addendum(), createdAt: now, modifiedAt: now, archived: false, status: "Active", versions: [], backups: [] },
-        { id: "tpl_cancellation", type: "cancellation", name: "Cancellation Agreement", version: 1, master: true, fileName: "Cancellation.docx", content: window.TemplateLibrary.cancellation(), createdAt: now, modifiedAt: now, archived: false, status: "Active", versions: [], backups: [] },
-      ];
+      state.templates = (window.ContractDefinitions?.list() || []).map((contract) => ({
+        id: `tpl_${contract.id}`,
+        type: contract.id,
+        name: contract.label,
+        version: 1,
+        master: true,
+        fileName: contract.templateFile,
+        content: window.TemplateLibrary[contract.id === "psa_marketing" ? "psaMarketing" : contract.id](),
+        createdAt: now,
+        modifiedAt: now,
+        archived: false,
+        status: "Active",
+        versions: [],
+        backups: [],
+      }));
     } else {
       state.templates = (state.templates || []).map((template) => {
-        const mapped = templateAlias[template.type] || templateAlias[template.name];
-        if (!mapped) return template;
-        return { ...template, type: mapped.type, name: mapped.name, fileName: mapped.fileName, masterFile: mapped.fileName, content: mapped.content || template.content };
+        const contract = window.ContractDefinitions?.contractFromTemplateRef(template);
+        if (!contract) return template;
+        return { ...template, type: contract.id, name: contract.label, fileName: contract.templateFile, masterFile: contract.templateFile, content: template.content };
       });
       const now = new Date().toISOString();
-      [
-        { id: "tpl_addendum", type: "addendum", name: "Addendum", fileName: "Addendum.docx", content: window.TemplateLibrary.addendum() },
-        { id: "tpl_cancellation", type: "cancellation", name: "Cancellation Agreement", fileName: "Cancellation.docx", content: window.TemplateLibrary.cancellation() },
-      ].forEach((template) => {
-        if (!state.templates.some((item) => item.type === template.type)) {
-          state.templates.push({ ...template, version: 1, master: true, createdAt: now, modifiedAt: now, archived: false, status: "Active", versions: [], backups: [] });
+      (window.ContractDefinitions?.list() || []).forEach((contract) => {
+        if (!state.templates.some((item) => item.type === contract.id)) {
+          const contentFactory = contract.id === "psa_marketing" ? "psaMarketing" : contract.id;
+          state.templates.push({ id: `tpl_${contract.id}`, type: contract.id, name: contract.label, fileName: contract.templateFile, content: window.TemplateLibrary[contentFactory](), version: 1, master: true, createdAt: now, modifiedAt: now, archived: false, status: "Active", versions: [], backups: [] });
         }
       });
     }
@@ -162,7 +160,7 @@
     if (record.id !== "active_contract_draft") throw new Error("Unknown draft record.");
     if (record.status === "completed" || record.status === "cleared" || record.status === "corrupted") return null;
     if (!record.deal || typeof record.deal !== "object") throw new Error("Draft deal data is invalid.");
-    const allowedTypes = ["psa", "psa_marketing", "aif", "novation", "addendum", "cancellation"];
+    const allowedTypes = (window.ContractDefinitions?.list() || []).map((contract) => contract.id);
     const contractType = allowedTypes.includes(record.contractType) ? record.contractType : "psa";
     return {
       ...record,

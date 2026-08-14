@@ -1,4 +1,8 @@
 (function () {
+  function contract(contractType) {
+    return window.ContractDefinitions?.get(contractType) || window.ContractDefinitions?.get("psa");
+  }
+
   const FIELD_META = {
     sellerName: { label: "Seller Name", required: true, section: "seller" },
     purchasePrice: { label: "Purchase Price", required: false, section: "financial", format: "currency" },
@@ -14,38 +18,12 @@
     sellerRetainedBalance: { label: "Seller Retained Balance", section: "financial", format: "currency" },
   };
 
-  const CONTRACT_EDITABLE_FIELDS = {
-    psa: ["sellerName", "propertyAddress", "purchasePrice", "earnestMoneyDeposit", "cashAtCloseOfEscrow", "closeOfEscrowDays", "inspectionPeriodDays"],
-    psa_marketing: ["sellerName", "propertyAddress", "purchasePrice", "earnestMoneyDeposit", "cashAtCloseOfEscrow", "closeOfEscrowDays", "inspectionPeriodDays"],
-    aif: ["property", "name"],
-    novation: ["sellerName", "propertyAddress", "purchasePrice", "sellerRetainedBalance"],
-    addendum: ["sellerName", "date", "propertyAddress", "body"],
-    cancellation: ["sellerName", "propertyAddress", "body"],
-  };
-
-  const CONTRACT_REQUIRED_FIELDS = {
-    psa: ["sellerName", "propertyAddress", "purchasePrice", "earnestMoneyDeposit", "cashAtCloseOfEscrow", "closeOfEscrowDays", "inspectionPeriodDays"],
-    psa_marketing: ["sellerName", "propertyAddress", "purchasePrice", "earnestMoneyDeposit", "cashAtCloseOfEscrow", "closeOfEscrowDays", "inspectionPeriodDays"],
-    aif: ["property", "name"],
-    novation: ["sellerName", "propertyAddress", "purchasePrice", "sellerRetainedBalance"],
-    addendum: ["sellerName", "date", "propertyAddress"],
-    cancellation: ["sellerName", "propertyAddress"],
-  };
-
-  const CONTRACT_LABELS = {
-    psa: "PSA",
-    psa_marketing: "PSA (with marketing)",
-    aif: "AIF",
-    novation: "Novation",
-    addendum: "Addendum",
-    cancellation: "Cancellation Agreement",
-  };
-
   function create(type = "psa") {
+    const resolved = contract(type);
     return {
       id: Utils.uid("deal"),
-      contractType: type,
-      contractTypeLabel: type,
+      contractType: resolved.id,
+      contractTypeLabel: resolved.label,
       status: "Draft",
       sellerName: "",
       purchasePrice: "",
@@ -75,7 +53,7 @@
     deal.sellerRetainedBalance = FormattingEngine.number(deal.sellerRetainedBalance);
     deal.purchasePriceWords = FormattingEngine.words(deal.purchasePrice);
     deal.titleCompany = deal.titleCompany || settings.defaultTitleCompany || "";
-    deal.contractTypeLabel = CONTRACT_LABELS[deal.contractType] || deal.contractTypeLabel || deal.contractType;
+    deal.contractTypeLabel = contract(deal.contractType)?.label || deal.contractTypeLabel || deal.contractType;
     deal.status = deal.status || "Draft";
     deal.notes = Array.isArray(deal.notes) ? deal.notes : [];
     deal.activities = Array.isArray(deal.activities) ? deal.activities : [];
@@ -97,11 +75,11 @@
   }
 
   function editableFields(contractType) {
-    return CONTRACT_EDITABLE_FIELDS[contractType] || CONTRACT_EDITABLE_FIELDS.psa;
+    return contract(contractType)?.editableFields || contract("psa").editableFields;
   }
 
   function requiredFields(contractType) {
-    return CONTRACT_REQUIRED_FIELDS[contractType] || CONTRACT_REQUIRED_FIELDS.psa;
+    return contract(contractType)?.requiredFields || contract("psa").requiredFields;
   }
 
   function longDate(value) {
@@ -118,53 +96,33 @@
     const normalized = normalize(deal, settings);
     const currency = settings.currency || "USD";
     const money = (value) => (value ? FormattingEngine.currency(value, currency) : "");
-    const maps = {
-      psa: {
-        SELLER_NAME: normalized.sellerName || "",
-        PROPERTY_ADDRESS: normalized.propertyAddress || "",
-        PURCHASE_PRICE: money(normalized.purchasePrice),
-        EARNEST_MONEY_DEPOSIT: money(normalized.earnestMoneyDeposit),
-        EARNEST_MONEY: money(normalized.earnestMoneyDeposit),
-        CASH_AT_CLOSE: money(normalized.cashAtCloseOfEscrow),
-        CASH_AT_CLOSE_OF_ESCROW: money(normalized.cashAtCloseOfEscrow),
-        CLOSE_OF_ESCROW_DAYS: normalized.closeOfEscrowDays || "",
-        INSPECTION_PERIOD_DAYS: normalized.inspectionPeriodDays || "",
-      },
-      psa_marketing: {
-        SELLER_NAME: normalized.sellerName || "",
-        PROPERTY_ADDRESS: normalized.propertyAddress || "",
-        PURCHASE_PRICE: money(normalized.purchasePrice),
-        EARNEST_MONEY_DEPOSIT: money(normalized.earnestMoneyDeposit),
-        EARNEST_MONEY: money(normalized.earnestMoneyDeposit),
-        CASH_AT_CLOSE: money(normalized.cashAtCloseOfEscrow),
-        CASH_AT_CLOSE_OF_ESCROW: money(normalized.cashAtCloseOfEscrow),
-        CLOSE_OF_ESCROW_DAYS: normalized.closeOfEscrowDays || "",
-        INSPECTION_PERIOD_DAYS: normalized.inspectionPeriodDays || "",
-      },
-      aif: {
-        PROPERTY_ADDRESS: normalized.property || "",
-        SELLER_NAME: normalized.name || "",
-        ATTORNEY_IN_FACT_NAME: normalized.name || "",
-      },
-      novation: {
-        SELLER_NAME: normalized.sellerName || "",
-        PROPERTY_ADDRESS: normalized.propertyAddress || "",
-        PURCHASE_PRICE: [money(normalized.purchasePrice), money(normalized.sellerRetainedBalance)],
-        SELLER_RETAINED_BALANCE: money(normalized.sellerRetainedBalance),
-      },
-      addendum: {
-        SELLER_NAME: normalized.sellerName || "",
-        DATE: longDate(normalized.date),
-        PROPERTY_ADDRESS: normalized.propertyAddress || "",
-        BODY: normalized.body || "",
-      },
-      cancellation: {
-        SELLER_NAME: normalized.sellerName || "",
-        PROPERTY_ADDRESS: normalized.propertyAddress || "",
-        BODY: normalized.body || "",
-      },
-    };
-    return maps[contractType] || maps.psa;
+    const selected = contract(contractType);
+    const tokenMap = {};
+    const placeholders = selected?.placeholderMap || contract("psa").placeholderMap;
+    Object.entries(placeholders).forEach(([token, fieldRef]) => {
+      if (Array.isArray(fieldRef)) {
+        tokenMap[token] = fieldRef.map((fieldName) => {
+          if (fieldName === "purchasePrice") return money(normalized.purchasePrice);
+          if (fieldName === "sellerRetainedBalance") return money(normalized.sellerRetainedBalance);
+          return normalized[fieldName] || "";
+        });
+        return;
+      }
+      if (fieldRef === "date") {
+        tokenMap[token] = longDate(normalized.date);
+        return;
+      }
+      if (fieldRef === "body") {
+        tokenMap[token] = normalized.body || "";
+        return;
+      }
+      if (["purchasePrice", "earnestMoneyDeposit", "cashAtCloseOfEscrow", "sellerRetainedBalance"].includes(fieldRef)) {
+        tokenMap[token] = money(normalized[fieldRef]);
+        return;
+      }
+      tokenMap[token] = normalized[fieldRef] || "";
+    });
+    return tokenMap;
   }
 
   function statuses() {

@@ -1,13 +1,5 @@
 (function () {
-  const CONTRACT_TYPES = [
-    ["psa", "PSA"],
-    ["psa_marketing", "PSA (with marketing)"],
-    ["aif", "AIF"],
-    ["novation", "Novation"],
-    ["addendum", "Addendum"],
-    ["cancellation", "Cancellation Agreement"],
-  ];
-
+  const CONTRACT_TYPES = () => (window.ContractDefinitions?.labels() || [["psa", "PSA"]]);
   const BODY_BULLETS = {
     cancellation: ["Inspection contingency", "Mutual agreement", "Financing issue", "Title issue"],
     addendum: ["Price adjustment", "Extension of closing", "Change in terms", "Additional agreement"],
@@ -16,60 +8,6 @@
   function blankDeal(type = "psa") {
     return DealEngine.create(type);
   }
-
-  const FIELD_GROUPS = {
-    psa: [
-      { title: "PSA", fields: [
-        ["sellerName", "Seller Name", "text"],
-        ["propertyAddress", "Property Address", "text"],
-        ["purchasePrice", "Purchase Price", "text", true],
-        ["earnestMoneyDeposit", "Earnest Money Deposit", "text", true],
-        ["cashAtCloseOfEscrow", "Cash at Close of Escrow (COE)", "text", true, true],
-        ["closeOfEscrowDays", "Close of Escrow Days", "text"],
-        ["inspectionPeriodDays", "Inspection Period Days", "text"],
-      ] },
-    ],
-    psa_marketing: [
-      { title: "PSA (with marketing)", fields: [
-        ["sellerName", "Seller Name", "text"],
-        ["propertyAddress", "Property Address", "text"],
-        ["purchasePrice", "Purchase Price", "text", true],
-        ["earnestMoneyDeposit", "Earnest Money Deposit", "text", true],
-        ["cashAtCloseOfEscrow", "Cash at Close of Escrow (COE)", "text", true, true],
-        ["closeOfEscrowDays", "Close of Escrow Days", "text"],
-        ["inspectionPeriodDays", "Inspection Period Days", "text"],
-      ] },
-    ],
-    aif: [
-      { title: "AIF", fields: [
-        ["property", "Property", "text"],
-        ["name", "Name", "text"],
-      ] },
-    ],
-    novation: [
-      { title: "Novation", fields: [
-        ["sellerName", "Seller Name", "text"],
-        ["propertyAddress", "Property Address", "text"],
-        ["purchasePrice", "Purchase Price", "text", true],
-        ["sellerRetainedBalance", "Seller Retained Balance", "text", true],
-      ] },
-    ],
-    addendum: [
-      { title: "Addendum", fields: [
-        ["sellerName", "Seller Name", "text"],
-        ["date", "Date", "date"],
-        ["propertyAddress", "Property Address", "text"],
-        ["body", "Body", "textarea"],
-      ] },
-    ],
-    cancellation: [
-      { title: "Cancellation Agreement", fields: [
-        ["sellerName", "Seller Name", "text"],
-        ["propertyAddress", "Property Address", "text"],
-        ["body", "Body", "textarea"],
-      ] },
-    ],
-  };
 
   function renderContractForm(state, deal = blankDeal(state.ui.draftContractType)) {
     const view = Utils.query("#viewContainer");
@@ -80,13 +18,14 @@
     const buyerContacts = (state.contacts || []).filter((c) => c.category === "Buyer Contacts");
     const titleContacts = (state.contacts || []).filter((c) => c.category === "Title Companies");
     const propertyRecords = state.properties || [];
-    const sections = FIELD_GROUPS[formDeal.contractType] || FIELD_GROUPS.psa;
+    const contractDef = window.ContractDefinitions?.get(formDeal.contractType) || window.ContractDefinitions?.get("psa");
+    const sections = contractDef.formSections || [];
     view.innerHTML = `
       <div class="section-title">
         <h3>Create Contract</h3>
         <div class="toolbar">
           <select id="contractTypeSelect">
-            ${CONTRACT_TYPES.map(([value, label]) => `<option value="${value}" ${formDeal.contractType === value ? "selected" : ""}>${label}</option>`).join("")}
+            ${CONTRACT_TYPES().map(([value, label]) => `<option value="${value}" ${formDeal.contractType === value ? "selected" : ""}>${label}</option>`).join("")}
           </select>
           <span class="muted" id="draftSaveStatus">Saved</span>
           <button class="btn btn-secondary" id="startNewContract" type="button">Start New Contract</button>

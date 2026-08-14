@@ -1,42 +1,10 @@
 (function () {
-  const TEMPLATE_FILES = {
-    psa: "PSA.docx",
-    psa_marketing: "PSA(with marketing).docx",
-    aif: "AIF.docx",
-    novation: "Novation.docx",
-    addendum: "Addendum.docx",
-    cancellation: "Cancellation.docx",
-  };
-
-  const TEMPLATE_ALIASES = {
-    psa: "psa",
-    "psa_marketing": "psa_marketing",
-    aif: "aif",
-    novation: "novation",
-    addendum: "addendum",
-    cancellation: "cancellation",
-    [`${"purchase"}_${"agreement"}`]: "psa",
-    [`${"cancellation"}_${"agreement"}`]: "cancellation",
-    [`${"price"}_${"addendum"}`]: "addendum",
-    [`${"assignment"}_${"agreement"}`]: "novation",
-    [`${"PSA"}`]: "psa",
-    [`${"PSA"} (${ "with marketing" })`]: "psa_marketing",
-    [`${"AIF"}`]: "aif",
-    [`${"Novation"}`]: "novation",
-    [`${"Addendum"}`]: "addendum",
-    [`${"Price Addendum"}`]: "addendum",
-    [`${"Cancellation Agreement"}`]: "cancellation",
-    [`${"Cancellation"}`]: "cancellation",
-  };
-
   function resolveFileName(templateRef) {
     if (!templateRef) return null;
-    if (typeof templateRef === "string") {
-      const key = TEMPLATE_ALIASES[templateRef] || templateRef;
-      return TEMPLATE_FILES[key] || templateRef;
-    }
-    const key = TEMPLATE_ALIASES[templateRef.type] || TEMPLATE_ALIASES[templateRef.name] || templateRef.type;
-    return templateRef.fileName || templateRef.masterFile || TEMPLATE_FILES[key] || templateRef.type || null;
+    const contract = window.ContractDefinitions?.contractFromTemplateRef(templateRef);
+    if (contract) return contract.templateFile;
+    if (typeof templateRef === "string") return templateRef;
+    return templateRef.fileName || templateRef.masterFile || templateRef.type || null;
   }
 
   async function load(templateRef) {
@@ -52,5 +20,5 @@
     return fileName || `${typeof templateRef === "string" ? templateRef : templateRef?.type || "template"}.docx`;
   }
 
-  window.TemplateLoader = { load, filename, resolveFileName, TEMPLATE_FILES };
+  window.TemplateLoader = { load, filename, resolveFileName };
 })();
