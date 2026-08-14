@@ -111,7 +111,12 @@
     const money = (value) => (value ? FormattingEngine.currency(value, currency) : "");
     const selected = contract(contractType);
     const company = window.CompanyDefinitions?.get(normalized.companyId);
-    const tokenMap = {};
+    const tokenMap = {
+      COMPANY_NAME: normalized.companyName || company?.name || "",
+      COMPANY_OWNER: normalized.companyOwner || company?.ownerName || "",
+      SELLER_SIGNATURE_1: normalized.sellerSignature1 || normalized.sellerName || "",
+      SELLER_SIGNATURE_2: normalized.sellerSignature2 || "",
+    };
     const placeholders = selected?.placeholderMap || contract("psa").placeholderMap;
     Object.entries(placeholders).forEach(([token, fieldRef]) => {
       if (Array.isArray(fieldRef)) {
@@ -130,18 +135,11 @@
         tokenMap[token] = normalized.body || "";
         return;
       }
-      if (fieldRef === "companyId") {
-        tokenMap[token] = normalized.companyId || "";
-        return;
-      }
-      if (fieldRef === "companyName") {
-        tokenMap[token] = normalized.companyName || company?.name || "";
-        return;
-      }
-      if (fieldRef === "companyOwner") {
-        tokenMap[token] = normalized.companyOwner || company?.ownerName || "";
-        return;
-      }
+      if (fieldRef === "companyId") { tokenMap[token] = normalized.companyId || ""; return; }
+      if (fieldRef === "companyName") { tokenMap[token] = normalized.companyName || company?.name || ""; return; }
+      if (fieldRef === "companyOwner") { tokenMap[token] = normalized.companyOwner || company?.ownerName || ""; return; }
+      if (fieldRef === "sellerSignature1") { tokenMap[token] = normalized.sellerSignature1 || normalized.sellerName || ""; return; }
+      if (fieldRef === "sellerSignature2") { tokenMap[token] = normalized.sellerSignature2 || ""; return; }
       if (["purchasePrice", "earnestMoneyDeposit", "cashAtCloseOfEscrow", "sellerRetainedBalance"].includes(fieldRef)) {
         tokenMap[token] = money(normalized[fieldRef]);
         return;

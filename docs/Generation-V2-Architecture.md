@@ -55,3 +55,26 @@ Generated filenames use the street portion of the property address plus the cano
 - `123 Main St, Cincy, OH 42345` -> `123 Main St - PSA.pdf`
 
 The street portion is the text before the first comma. The full stored property address is not modified.
+
+## QA Verification Notes
+
+This pass was visually checked against regenerated DOCX and PDF outputs for the current six contract templates:
+
+- Purchase Agreement
+- Purchase Agreement with marketing
+- Assignment Agreement
+- Novation Agreement
+- Price Addendum
+- Cancellation Agreement
+
+Validated items:
+
+- Master templates continue to remain separate from generated contract outputs.
+- Canonical company data resolves from one source of truth and no duplicate `LLC` text remains in the rendered company lines.
+- `SELLER_SIGNATURE_2` is removed deterministically when empty instead of leaving a blank placeholder block.
+- Generated filenames continue to use the street portion of the stored address plus the canonical export label.
+
+Observed layout notes:
+
+- Company and signature text now render consistently across the validated templates.
+- The addendum, cancellation, and novation templates preserve their existing section layout after the company placeholder normalization.
