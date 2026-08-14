@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Last Results</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      color: #1f2937;
+      background: #f8fafc;
+      line-height: 1.5;
+    }
+    .card {
+      max-width: 920px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+    }
+    h2 {
+      margin: 24px 0 10px;
+      font-size: 18px;
+    }
+    ul {
+      margin: 8px 0 0 20px;
+    }
+    li {
+      margin: 6px 0;
+    }
+    code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    .muted {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Last Results</h1>
+    <p class="muted">Generated July 17, 2026</p>
+
+    <h2>Validation Fix</h2>
+    <ul>
+      <li>Fixed the required-field validation bug where populated fields could still show <code>This field is required.</code></li>
+      <li>Validation now trims text fields and checks purchase price numerically.</li>
+      <li>Added temporary debug logging for required fields: field name, current value, and validation result.</li>
+    </ul>
+
+    <h2>Workflow Update</h2>
+    <ul>
+      <li>Contract generation now follows: Fill Deal Information → Validate Required Fields → Generate Contract.</li>
+      <li>The review checklist is optional QA only and no longer blocks generation.</li>
+    </ul>
+
+    <h2>Template Conversion</h2>
+    <ul>
+      <li>Processed the four DOCX templates into placeholder-based master templates.</li>
+      <li>Kept legal wording, formatting, fonts, page breaks, margins, headers, and footers intact.</li>
+      <li>Backed up untouched originals in <code>backups/original-templates-2026-07-17/</code>.</li>
+    </ul>
+
+    <h2>Sample Outputs</h2>
+    <ul>
+      <li><code>generated/samples/sample_PSA.docx</code></li>
+      <li><code>generated/samples/sample_PSA(with marketing).docx</code></li>
+      <li><code>generated/samples/sample_AIF.docx</code></li>
+      <li><code>generated/samples/sample_Novation.docx</code></li>
+    </ul>
+
+    <h2>Notes</h2>
+    <ul>
+      <li>The document renders for the sample outputs were verified successfully.</li>
+      <li>The app’s validation debug logging remains enabled until you want it removed.</li>
+    </ul>
+  </div>
+</body>
+</html>

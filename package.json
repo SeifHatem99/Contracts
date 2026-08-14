@@ -1,0 +1,10 @@
+{
+  "name": "real-estate-contract-management",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline-first real estate contract management system with local HTTP launch support.",
+  "scripts": {
+    "dev": "python3 scripts/launch_server.py --no-open",
+    "open": "python3 scripts/launch_server.py --open"
+  }
+}

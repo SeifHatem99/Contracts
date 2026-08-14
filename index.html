@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Same Day Home Solutions</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SD</div>
+        <div>
+          <h1 id="companyNameDisplay">Same Day Home Solutions</h1>
+          <p>Contract Management System</p>
+        </div>
+      </div>
+      <nav class="nav" id="mainNav">
+        <button class="nav-item active" data-view="dashboard">Dashboard</button>
+        <button class="nav-item" data-view="contract">Create Contract</button>
+        <button class="nav-item" data-view="deal">Deal Details</button>
+        <button class="nav-item" data-view="contacts">Contacts</button>
+        <button class="nav-item" data-view="properties">Properties</button>
+        <button class="nav-item" data-view="templates">Template Manager</button>
+        <button class="nav-item" data-view="data">Data</button>
+        <button class="nav-item" data-view="emails">Email Center</button>
+        <button class="nav-item" data-view="notifications">Notifications</button>
+        <button class="nav-item" data-view="files">File Center</button>
+        <button class="nav-item" data-view="reports">Reports</button>
+        <button class="nav-item" data-view="diagnostics">Diagnostics</button>
+        <button class="nav-item" data-view="sync">Sync</button>
+        <button class="nav-item" data-view="search">Search</button>
+        <button class="nav-item" data-view="settings">Settings</button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="shortcut">Ctrl/Cmd + K search</div>
+        <div class="shortcut">Ctrl/Cmd + S save draft</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2 id="viewTitle">Dashboard</h2>
+          <p id="viewSubtitle">Manage deals, templates, and contract generation from one place.</p>
+          <div class="muted" id="breadcrumbs">Dashboard</div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary" id="quickNewDeal">New Deal</button>
+          <button class="btn btn-primary" id="openContractBuilder">Create Contract</button>
+        </div>
+      </header>
+
+      <section id="notifications" class="notifications"></section>
+
+      <section id="viewContainer" class="view-container"></section>
+    </main>
+  </div>
+
+  <div id="modalRoot"></div>
+
+  <script src="./js/utils.js"></script>
+  <script src="./js/engines/formatting-engine.js"></script>
+  <script src="./js/engines/deal-engine.js"></script>
+  <script src="./js/engines/contact-manager-engine.js"></script>
+  <script src="./js/engines/property-manager-engine.js"></script>
+  <script src="./js/engines/quick-create-engine.js"></script>
+  <script src="./js/engines/import-export-manager.js"></script>
+  <script src="./js/engines/email-manager-engine.js"></script>
+  <script src="./js/engines/analytics-engine.js"></script>
+  <script src="./js/engines/audit-logger-engine.js"></script>
+  <script src="./js/engines/error-manager.js"></script>
+  <script src="./js/engines/placeholder-engine.js"></script>
+  <script src="./js/engines/validation-engine.js"></script>
+  <script src="./js/engines/search-engine.js"></script>
+  <script src="./js/storage/database-manager.js"></script>
+  <script src="./js/storage/migration-manager.js"></script>
+  <script src="./js/storage/security-manager.js"></script>
+  <script src="./js/storage/conflict-manager.js"></script>
+  <script src="./js/storage/sync-manager.js"></script>
+  <script src="./js/storage.js"></script>
+  <script src="./js/templates.js"></script>
+  <script src="./js/exporter.js"></script>
+  <script src="./js/document/docx-zip.js"></script>
+  <script src="./js/document/template-loader.js"></script>
+  <script src="./js/document/placeholder-processor.js"></script>
+  <script src="./js/document/document-generator.js"></script>
+  <script src="./js/document/pdf-converter.js"></script>
+  <script src="./js/document/file-manager.js"></script>
+  <script src="./js/templates/template-utils.js"></script>
+  <script src="./js/templates/placeholder-scanner.js"></script>
+  <script src="./js/templates/version-manager.js"></script>
+  <script src="./js/templates/backup-manager.js"></script>
+  <script src="./js/templates/comparison-engine.js"></script>
+  <script src="./js/templates/template-manager-engine.js"></script>
+  <script src="./js/workflow/activity-logger.js"></script>
+  <script src="./js/workflow/notes-manager.js"></script>
+  <script src="./js/workflow/document-manager.js"></script>
+  <script src="./js/workflow/workflow-manager.js"></script>
+  <script src="./js/workflow/validator.js"></script>
+  <script src="./js/components/ui.js"></script>
+  <script src="./js/components/dashboard.js"></script>
+  <script src="./js/components/contract-form.js"></script>
+  <script src="./js/components/contact-manager.js"></script>
+  <script src="./js/components/property-manager.js"></script>
+  <script src="./js/components/data-manager.js"></script>
+  <script src="./js/components/email-center.js"></script>
+  <script src="./js/components/notification-center.js"></script>
+  <script src="./js/components/notifications-view.js"></script>
+  <script src="./js/components/diagnostics-view.js"></script>
+  <script src="./js/components/file-center.js"></script>
+  <script src="./js/components/reports-view.js"></script>
+  <script src="./js/components/sync-settings.js"></script>
+  <script src="./js/components/template-manager.js"></script>
+  <script src="./js/components/deal-details.js"></script>
+  <script src="./js/components/search.js"></script>
+  <script src="./js/components/settings.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
