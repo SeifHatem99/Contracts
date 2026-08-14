@@ -34,9 +34,13 @@
     Object.keys(entries).forEach((name) => {
       const text = new TextDecoder().decode(entries[name].data);
       if (name.endsWith(".xml")) {
-        // Keep the Seller 2 signature placeholder plumbing in place, but defer
-        // structural XML removal until the actual template layout is inspected.
-        xmlEntries[name] = new TextEncoder().encode(fillXml(text, deal, settings, templateInfo.type));
+        let xmlText = fillXml(text, deal, settings, templateInfo.type);
+        if (!String(placeholderState.SELLER_SIGNATURE_2 || "").trim()) {
+          // Remove only the exact paragraph containing the optional Seller 2 token.
+          // The templates place this token in its own paragraph, so this stays deterministic.
+          xmlText = DocxStructure.removeParagraphContainingToken(xmlText, "{{SELLER_SIGNATURE_2}}");
+        }
+        xmlEntries[name] = new TextEncoder().encode(xmlText);
       } else {
         xmlEntries[name] = entries[name].data;
       }

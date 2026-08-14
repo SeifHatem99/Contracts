@@ -45,4 +45,13 @@ The new Generation V2 company layer follows the same rule: canonical metadata be
 - Company names and owners now resolve from a single registry.
 - The form stores a stable company ID instead of a hard-coded company name.
 - `COMPANY_NAME` and `COMPANY_OWNER` are resolved through the canonical data layer.
-- Optional Seller 2 structural removal is currently deferred. The placeholder plumbing remains, but broad XML deletion is intentionally disabled until the actual Word table/paragraph structure around `SELLER_SIGNATURE_2` is inspected in the real template.
+- Seller 2 removal is paragraph-scoped and deterministic: only the exact paragraph containing `{{SELLER_SIGNATURE_2}}` is removed when that value is empty.
+
+## Filename Rule
+
+Generated filenames use the street portion of the property address plus the canonical export label:
+
+- `123 Main St, Cincy, OH 42345` -> `123 Main St - PSA.docx`
+- `123 Main St, Cincy, OH 42345` -> `123 Main St - PSA.pdf`
+
+The street portion is the text before the first comma. The full stored property address is not modified.
