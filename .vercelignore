@@ -1,0 +1,7 @@
+backups/
+data/
+generated/
+scripts/
+docs/backup-instructions.md
+docs/recovery-instructions.md
+docs/setup-instructions.md
