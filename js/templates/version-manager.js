@@ -25,7 +25,7 @@
       currentVersion: template.version || 1,
       previousVersions: Math.max(0, versions.length - 1),
       backupCount: backups.length,
-      placeholderCount: PlaceholderScanner.scan(template.content).length,
+      placeholderCount: template.placeholderCount ?? PlaceholderScanner.scan(template.content).length,
       wordCount: TemplateUtils.wordCount(template.content),
       pageCount: TemplateUtils.pageCount(template.content),
     };

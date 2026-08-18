@@ -2,7 +2,15 @@
   function renderTemplateManager(state) {
     TemplateManagerEngine.ensureTemplates(state);
     const view = Utils.query("#viewContainer");
+    view.innerHTML = `
+      <div class="card"><h3>Refreshing template metadata...</h3><p class="muted">Scanning current DOCX masters.</p></div>
+    `;
+    void renderTemplateManagerAsync(state, view);
+  }
+
+  async function renderTemplateManagerAsync(state, view) {
     const templates = state.templates.filter((template) => !template.archived);
+    await Promise.all(templates.map((template) => TemplateManagerEngine.refreshTemplateMetadata(template, state.settings).catch(() => null)));
     view.innerHTML = `
       <div class="section-title">
         <h3>Template Manager</h3>
@@ -56,8 +64,8 @@
     `;
   }
 
-  function openTemplate(template, state) {
-    const scanner = TemplateManagerEngine.scanTemplate(template, state.settings);
+  async function openTemplate(template, state) {
+    const scanner = await TemplateManagerEngine.refreshTemplateMetadata(template, state.settings).catch(() => TemplateManagerEngine.scanTemplate(template, state.settings));
     UI.modal(`
       <div class="modal-header">
         <div>
@@ -80,8 +88,8 @@
     `);
   }
 
-  function editTemplate(template, state) {
-    const scanner = TemplateManagerEngine.scanTemplate(template, state.settings);
+  async function editTemplate(template, state) {
+    const scanner = await TemplateManagerEngine.refreshTemplateMetadata(template, state.settings).catch(() => TemplateManagerEngine.scanTemplate(template, state.settings));
     UI.modal(`
       <div class="modal-header">
         <div>
