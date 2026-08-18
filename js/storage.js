@@ -1,6 +1,55 @@
 (function () {
   const KEY = "recm_state_v1";
 
+  function stableRecordId(prefix, record, index) {
+    if (record && typeof record.id === "string" && record.id.trim()) return record.id.trim();
+    const tokens = [
+      record?.filename,
+      record?.name,
+      record?.title,
+      record?.subject,
+      record?.dealId,
+      record?.createdAt,
+      record?.lastModified,
+      record?.modifiedAt,
+    ]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean);
+    const suffix = tokens.length ? tokens.join("_").replace(/[^a-zA-Z0-9._-]+/g, "_") : `legacy_${index + 1}`;
+    return `${prefix}_${suffix}`;
+  }
+
+  function normalizeStoreRecords(storeName, records) {
+    const prefixMap = {
+      deals: "deal",
+      contacts: "contact",
+      properties: "prop",
+      clauses: "clause",
+      emails: "email",
+      emailTemplates: "emailtpl",
+      tasks: "task",
+      calendarEvents: "event",
+      activityLogs: "activity",
+      errors: "error",
+      notifications: "notification",
+      templates: "template",
+      backups: "backup",
+      contracts: "contract",
+      documents: "document",
+      drafts: "draft",
+    };
+    const prefix = prefixMap[storeName] || storeName.replace(/s$/, "") || "record";
+    return (records || [])
+      .map((record, index) => {
+        if (!record || typeof record !== "object") return null;
+        if (storeName === "settings") return { id: "settings", ...record };
+        if (storeName === "drafts" && !record.id) return { id: "active_contract_draft", ...record };
+        if (record.id && String(record.id).trim()) return record;
+        return { id: stableRecordId(prefix, record, index), ...record };
+      })
+      .filter(Boolean);
+  }
+
   const defaultState = () => ({
     settings: {
       darkMode: false,
@@ -66,24 +115,24 @@
       const snapshot = await DatabaseManager.snapshot();
       const state = defaultState();
       state.settings = snapshot.settings[0] || state.settings;
-      state.deals = snapshot.deals || [];
-      state.contacts = snapshot.contacts || [];
-      state.properties = snapshot.properties || [];
-      state.clauses = snapshot.clauses || [];
-      state.emails = snapshot.emails || [];
-      state.emailTemplates = snapshot.emailTemplates || [];
-      state.tasks = snapshot.tasks || [];
+      state.deals = normalizeStoreRecords("deals", snapshot.deals);
+      state.contacts = normalizeStoreRecords("contacts", snapshot.contacts);
+      state.properties = normalizeStoreRecords("properties", snapshot.properties);
+      state.clauses = normalizeStoreRecords("clauses", snapshot.clauses);
+      state.emails = normalizeStoreRecords("emails", snapshot.emails);
+      state.emailTemplates = normalizeStoreRecords("emailTemplates", snapshot.emailTemplates);
+      state.tasks = normalizeStoreRecords("tasks", snapshot.tasks);
       state.reminders = state.reminders || [];
-      state.calendarEvents = snapshot.calendarEvents || [];
+      state.calendarEvents = normalizeStoreRecords("calendarEvents", snapshot.calendarEvents);
       state.analytics = state.analytics || [];
-      state.auditLog = snapshot.activityLogs || [];
-      state.errorHistory = snapshot.errors || [];
-      state.notifications = snapshot.notifications || [];
-      state.templates = snapshot.templates || [];
-      state.backups = snapshot.backups || [];
-      state.generated = snapshot.contracts || [];
-      state.documents = snapshot.documents || [];
-      state.drafts = snapshot.drafts || [];
+      state.auditLog = normalizeStoreRecords("activityLogs", snapshot.activityLogs);
+      state.errorHistory = normalizeStoreRecords("errors", snapshot.errors);
+      state.notifications = normalizeStoreRecords("notifications", snapshot.notifications);
+      state.templates = normalizeStoreRecords("templates", snapshot.templates);
+      state.backups = normalizeStoreRecords("backups", snapshot.backups);
+      state.generated = normalizeStoreRecords("contracts", snapshot.contracts);
+      state.documents = normalizeStoreRecords("documents", snapshot.documents);
+      state.drafts = normalizeStoreRecords("drafts", snapshot.drafts);
       return seed(state);
     } catch {
       return loadLegacy();
@@ -128,30 +177,36 @@
         }
       });
     }
+    state.generated = normalizeStoreRecords("contracts", state.generated);
+    state.documents = normalizeStoreRecords("documents", state.documents);
+    state.backups = normalizeStoreRecords("backups", state.backups);
+    state.templates = normalizeStoreRecords("templates", state.templates);
+    state.emailTemplates = normalizeStoreRecords("emailTemplates", state.emailTemplates);
+    state.drafts = normalizeStoreRecords("drafts", state.drafts);
     return state;
   }
 
   async function save(state) {
     localStorage.setItem(KEY, JSON.stringify(state));
     await DatabaseManager.clear("settings");
-    await DatabaseManager.putMany("settings", [{ id: "settings", ...state.settings }]);
+    await DatabaseManager.putMany("settings", normalizeStoreRecords("settings", [{ id: "settings", ...state.settings }]));
     await Promise.all([
-      DatabaseManager.putMany("deals", state.deals || []),
-      DatabaseManager.putMany("contacts", state.contacts || []),
-      DatabaseManager.putMany("properties", state.properties || []),
-      DatabaseManager.putMany("clauses", state.clauses || []),
-      DatabaseManager.putMany("emails", state.emails || []),
-      DatabaseManager.putMany("emailTemplates", state.emailTemplates || []),
-      DatabaseManager.putMany("tasks", state.tasks || []),
-      DatabaseManager.putMany("calendarEvents", state.calendarEvents || []),
-      DatabaseManager.putMany("activityLogs", state.auditLog || []),
-      DatabaseManager.putMany("errors", state.errorHistory || []),
-      DatabaseManager.putMany("notifications", state.notifications || []),
-      DatabaseManager.putMany("templates", state.templates || []),
-      DatabaseManager.putMany("backups", state.backups || []),
-      DatabaseManager.putMany("contracts", state.generated || []),
-      DatabaseManager.putMany("documents", state.documents || []),
-      DatabaseManager.putMany("drafts", state.drafts || []),
+      DatabaseManager.putMany("deals", normalizeStoreRecords("deals", state.deals)),
+      DatabaseManager.putMany("contacts", normalizeStoreRecords("contacts", state.contacts)),
+      DatabaseManager.putMany("properties", normalizeStoreRecords("properties", state.properties)),
+      DatabaseManager.putMany("clauses", normalizeStoreRecords("clauses", state.clauses)),
+      DatabaseManager.putMany("emails", normalizeStoreRecords("emails", state.emails)),
+      DatabaseManager.putMany("emailTemplates", normalizeStoreRecords("emailTemplates", state.emailTemplates)),
+      DatabaseManager.putMany("tasks", normalizeStoreRecords("tasks", state.tasks)),
+      DatabaseManager.putMany("calendarEvents", normalizeStoreRecords("calendarEvents", state.calendarEvents)),
+      DatabaseManager.putMany("activityLogs", normalizeStoreRecords("activityLogs", state.auditLog)),
+      DatabaseManager.putMany("errors", normalizeStoreRecords("errors", state.errorHistory)),
+      DatabaseManager.putMany("notifications", normalizeStoreRecords("notifications", state.notifications)),
+      DatabaseManager.putMany("templates", normalizeStoreRecords("templates", state.templates)),
+      DatabaseManager.putMany("backups", normalizeStoreRecords("backups", state.backups)),
+      DatabaseManager.putMany("contracts", normalizeStoreRecords("contracts", state.generated)),
+      DatabaseManager.putMany("documents", normalizeStoreRecords("documents", state.documents)),
+      DatabaseManager.putMany("drafts", normalizeStoreRecords("drafts", state.drafts)),
     ]);
   }
 
